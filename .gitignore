@@ -1,0 +1,18 @@
+.pixi/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Generated analysis data and downloaded models are local artifacts.
+runs/*
+!runs/README.md
+models/
+
+# Large media should never enter the repository.
+*.mp4
+*.mkv
+*.webm
+*.wav
+*.mp3

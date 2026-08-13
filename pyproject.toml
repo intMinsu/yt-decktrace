@@ -1,0 +1,59 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "yt-decktrace"
+version = "0.1.0"
+description = "Turn YouTube presentations into timestamped slide and transcript bundles"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "faster-whisper>=1.2,<2",
+  "pillow>=11,<13",
+  "pysubs2>=1.8,<2",
+  "rich>=14,<15",
+  "scenedetect[opencv]>=0.7,<0.8",
+  "typer>=0.16,<1",
+  "yt-dlp>=2026.7.4",
+]
+
+[project.scripts]
+yt-decktrace = "yt_decktrace.cli:app"
+
+[project.urls]
+Repository = "https://github.com/intMinsu/yt-decktrace"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/yt_decktrace"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tool.pixi.dependencies]
+python = "3.12.*"
+ffmpeg = "*"
+cuda-version = "12.9.*"
+cuda-cudart = "12.9.*"
+libcublas = ">=12,<13"
+cudnn = ">=9,<10"
+
+[tool.pixi.pypi-dependencies]
+yt-decktrace = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+doctor = "yt-decktrace doctor"
+analyze = "yt-decktrace analyze"
+test = "pytest"
+
+[tool.pixi.feature.dev.dependencies]
+pytest = ">=8,<9"
+ruff = ">=0.12,<1"
+
+[tool.pixi.environments]
+default = { features = ["dev"] }
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
