@@ -104,6 +104,15 @@ OVERVIEW = """
 
 
 PIPELINE = """
+  <defs>
+    <marker id="pipeline-arrow" viewBox="0 0 9 9" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M1 1 L8 4.5 L1 8 Z" fill="#242424"/>
+    </marker>
+    <style>
+      .pipeline-flow { fill: none; stroke: #242424; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#pipeline-arrow); }
+      .pipeline-merge { fill: none; stroke: #242424; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
   <text x="64" y="76" class="title">Keep changes. Transcribe speech. Align by time.</text>
   <text x="64" y="112" class="subtitle">Two local pipelines turn one video into a shared evidence timeline.</text>
 
@@ -117,11 +126,11 @@ PIPELINE = """
 
   <!-- Visual lane -->
   <text x="254" y="176" class="caps">VISUAL LANE</text>
-  <path d="M214 330 C238 330 230 226 254 226" class="flow"/>
+  <path d="M214 330 C238 330 230 228 254 228" class="pipeline-flow"/>
   <rect x="270" y="190" width="166" height="76" rx="16" fill="#bdebea" stroke="#242424" stroke-width="3"/>
   <text x="353" y="223" text-anchor="middle" class="label">FFmpeg</text>
   <text x="353" y="249" text-anchor="middle" class="small">sample at 1 fps</text>
-  <path d="M452 228 H488" class="flow"/>
+  <path d="M452 228 H488" class="pipeline-flow"/>
 
   <rect x="504" y="183" width="44" height="78" rx="6" fill="#ebe6dc" stroke="#8d897f" stroke-width="2"/>
   <circle cx="526" cy="209" r="9" fill="#c8c3b8"/>
@@ -136,11 +145,11 @@ PIPELINE = """
   <rect x="681" y="195" width="26" height="17" rx="3" fill="#d8c7ff" stroke="#242424" stroke-width="2"/>
   <path d="M679 248 L693 225 L705 237 L712 221" class="thin"/>
 
-  <path d="M732 228 H768" class="flow"/>
+  <path d="M732 228 H768" class="pipeline-flow"/>
   <rect x="784" y="190" width="226" height="76" rx="16" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
   <text x="897" y="223" text-anchor="middle" class="label">Pillow + ImageHash</text>
   <text x="897" y="249" text-anchor="middle" class="small">distance · stability · gap</text>
-  <path d="M1026 228 H1062" class="flow"/>
+  <path d="M1026 228 H1062" class="pipeline-flow"/>
 
   <rect x="1078" y="183" width="58" height="78" rx="7" fill="#fff3ad" stroke="#242424" stroke-width="3"/>
   <circle cx="1107" cy="208" r="10" fill="#ff8a65" stroke="#242424" stroke-width="2"/>
@@ -151,16 +160,16 @@ PIPELINE = """
 
   <!-- Audio lane -->
   <text x="254" y="418" class="caps">SPEECH LANE</text>
-  <path d="M214 406 H254" class="flow"/>
+  <path d="M214 406 H254" class="pipeline-flow"/>
   <rect x="270" y="438" width="246" height="88" rx="16" fill="#ffffff" stroke="#242424" stroke-width="3"/>
   <path d="M294 482 L306 466 L318 499 L330 454 L342 507 L354 470 L366 496 L378 459 L390 501 L402 471 L414 493 L426 463 L438 502 L450 474 L462 493 L492 482" class="thin"/>
   <text x="393" y="555" text-anchor="middle" class="small">audio waveform</text>
-  <path d="M532 482 H568" class="flow"/>
+  <path d="M532 482 H568" class="pipeline-flow"/>
 
   <rect x="584" y="438" width="226" height="88" rx="16" fill="#d8c7ff" stroke="#242424" stroke-width="3"/>
   <text x="697" y="477" text-anchor="middle" class="label">faster-whisper</text>
   <text x="697" y="505" text-anchor="middle" class="small">local speech recognition</text>
-  <path d="M826 482 H862" class="flow"/>
+  <path d="M826 482 H862" class="pipeline-flow"/>
 
   <rect x="878" y="426" width="284" height="112" rx="16" fill="#ffffff" stroke="#242424" stroke-width="3"/>
   <text x="902" y="460" class="small">[08:29]</text>
@@ -170,8 +179,10 @@ PIPELINE = """
   <text x="980" y="512" class="body">The output is…</text>
 
   <!-- Alignment target -->
-  <path d="M1222 262 V341 H1250" class="flow"/>
-  <path d="M1178 482 H1250" class="flow"/>
+  <path d="M1218 228 H1238 V421" class="pipeline-merge"/>
+  <path d="M1178 482 H1238 V421" class="pipeline-merge"/>
+  <circle cx="1238" cy="421" r="5" fill="#242424"/>
+  <path d="M1238 421 H1254" class="pipeline-flow"/>
   <rect x="1266" y="326" width="126" height="190" rx="20" fill="#ffb7a7" stroke="#242424" stroke-width="3"/>
   <text x="1329" y="370" text-anchor="middle" class="caps">ALIGNED</text>
   <line x1="1292" y1="402" x2="1366" y2="402" class="thin"/>
