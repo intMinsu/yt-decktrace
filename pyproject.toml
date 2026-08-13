@@ -50,6 +50,7 @@ yt-decktrace = { path = ".", editable = true }
 [tool.pixi.tasks]
 doctor = "yt-decktrace doctor"
 analyze = "yt-decktrace analyze"
+pack = "yt-decktrace pack"
 test = "pytest"
 lint = "ruff check ."
 

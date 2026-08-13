@@ -12,6 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from yt_decktrace import __version__
+from yt_decktrace.pack import pack_run
 from yt_decktrace.pipeline import analyze_youtube
 from yt_decktrace.runtime import ffmpeg_version, find_ffmpeg, register_nvidia_dll_directories
 
@@ -117,6 +118,33 @@ def analyze(
         force=force,
     )
     console.print(f"[green]Complete:[/] {context_path.resolve()}")
+
+
+@app.command()
+def pack(
+    video_id: Annotated[str, typer.Argument(help="Completed run's YouTube video ID.")],
+    runs_root: Annotated[
+        Path, typer.Option("--runs-root", "-r", help="Run directory root.")
+    ] = Path("runs"),
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Destination ZIP path.")
+    ] = None,
+    force: Annotated[
+        bool, typer.Option(help="Replace an existing archive.")
+    ] = False,
+) -> None:
+    """Package a completed run for analysis in GPT or another multimodal LLM."""
+    result = pack_run(
+        video_id,
+        runs_root=runs_root,
+        output_path=output,
+        force=force,
+    )
+    size_mb = result.size_bytes / (1024 * 1024)
+    console.print(
+        f"[green]Packed[/] {result.frame_count} frames and {result.file_count} files "
+        f"({size_mb:.2f} MiB): {result.archive_path}"
+    )
 
 
 if __name__ == "__main__":
