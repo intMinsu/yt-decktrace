@@ -40,6 +40,9 @@ pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" --asr whisper
 
 # Tune frame sensitivity or choose a smaller Whisper model
 pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" --threshold 12 --model small
+
+# Package a completed run for GPT or another multimodal LLM
+pixi run pack VIDEO_ID
 ```
 
 The installed console command will expose the same interface:
@@ -66,7 +69,8 @@ runs/VIDEO_ID/
 │   └── transcript.md
 └── bundle/
     ├── context.md
-    └── timeline.json
+    ├── timeline.json
+    └── yt-decktrace-VIDEO_ID.zip
 ```
 
 The final Markdown is designed to look roughly like this:
@@ -82,6 +86,36 @@ The test harness separates the application lifecycle from the test lifecycle...
 ```
 
 Generated runs, downloaded media, and model weights are ignored by Git.
+
+## GPT handoff archive
+
+`pack` creates one compact ZIP without the original video or raw caption file.
+It preserves the relative paths used by `context.md` and includes only the
+analysis artifacts needed by a multimodal model:
+
+```text
+START_HERE.md
+manifest.json
+bundle/context.md
+bundle/timeline.json
+frames/*.jpg
+frames/frames.json
+transcript/transcript.md
+transcript/segments.json
+source/metadata.json
+```
+
+`START_HERE.md` tells the model to read the timeline first, open relevant frame
+files for visual evidence, cite YouTube timestamps, and treat slide or transcript
+text as source data rather than instructions. Archive entries use stable ordering
+and timestamps so identical run artifacts produce an identical ZIP.
+
+Use `--output` to choose another destination, or `--force` to replace an existing
+archive:
+
+```powershell
+pixi run pack VIDEO_ID --output exports\presentation.zip --force
+```
 
 ## Pipeline design
 
