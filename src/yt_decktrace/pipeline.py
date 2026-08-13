@@ -22,6 +22,7 @@ def analyze_youtube(
     output_root: Path,
     asr: str = "auto",
     whisper_model: str = "large-v3",
+    whisper_language: str = "auto",
     sample_fps: float = 1.0,
     change_threshold: int = 10,
     min_gap: float = 2.0,
@@ -51,6 +52,7 @@ def analyze_youtube(
         segments, details = transcribe_with_whisper(
             ingest.video_path,
             model_name=whisper_model,
+            language=whisper_language,
         )
 
     transcript_dir = ingest.run_dir / "transcript"
@@ -92,6 +94,7 @@ def analyze_youtube(
             "settings": {
                 "asr": asr,
                 "whisper_model": whisper_model,
+                "whisper_language": whisper_language,
                 "sample_fps": sample_fps,
                 "change_threshold": change_threshold,
                 "min_gap": min_gap,

@@ -26,6 +26,12 @@ class AsrMode(str, Enum):
     whisper = "whisper"
 
 
+class WhisperLanguage(str, Enum):
+    auto = "auto"
+    ko = "ko"
+    en = "en"
+
+
 def _package_version(name: str) -> str:
     try:
         return importlib.metadata.version(name)
@@ -92,6 +98,10 @@ def analyze(
     model: Annotated[
         str, typer.Option(help="faster-whisper model used for local ASR.")
     ] = "large-v3",
+    language: Annotated[
+        WhisperLanguage,
+        typer.Option(help="Spoken language for Whisper; auto enables language detection."),
+    ] = WhisperLanguage.auto,
     sample_fps: Annotated[
         float, typer.Option(min=0.1, max=10.0, help="Frame sample rate.")
     ] = 1.0,
@@ -105,13 +115,14 @@ def analyze(
         bool, typer.Option(help="Redownload source files and regenerate artifacts.")
     ] = False,
 ) -> None:
-    """Create changed-frame and Korean-transcript context from a YouTube video."""
+    """Create changed-frame and timestamped-transcript context from a YouTube video."""
     console.print(f"[cyan]Analyzing[/] {source}")
     context_path = analyze_youtube(
         source,
         output_root=output,
         asr=asr.value,
         whisper_model=model,
+        whisper_language=language.value,
         sample_fps=sample_fps,
         change_threshold=threshold,
         min_gap=min_gap,

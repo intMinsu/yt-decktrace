@@ -122,7 +122,9 @@ def ingest_youtube(
         options: dict[str, Any] = {
             "quiet": False,
             "noplaylist": True,
-            "format": "bestvideo*+bestaudio/best",
+            "retries": 10,
+            "fragment_retries": 10,
+            "format": "bestvideo*+bestaudio[ext=m4a]/bestvideo*+bestaudio/best",
             "merge_output_format": "mkv",
             "overwrites": force,
             "skip_download": not needs_video,

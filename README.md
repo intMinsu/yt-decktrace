@@ -3,13 +3,35 @@
 Turn YouTube presentations into timestamped, LLM-ready context bundles.
 
 `yt-decktrace` is a local-first pipeline for extracting meaningful slide changes
-and Korean transcripts from presentation videos. Instead of sending every video
+and timestamped transcripts from presentation videos. Instead of sending every video
 frame to a model, it keeps representative changed frames, aligns them with the
 spoken timeline, and produces Markdown that an LLM can navigate efficiently.
 
 > [!NOTE]
 > The first working pipeline targets Windows x64. FFmpeg and a current NVIDIA
 > display driver are external prerequisites; CPU transcription remains available.
+
+## Real-world Whisper demo
+
+[![Actual yt-decktrace output from an English AI lecture](docs/assets/example-35c3.svg)](https://www.youtube.com/watch?v=2qJ1wrLcgx0&t=509s)
+
+The 41:07 English talk
+[*35C3 – Introduction to Deep Learning*](https://media.ccc.de/v/35c3-9386-introduction_to_deep_learning)
+was processed with local `faster-whisper` `large-v3` on CUDA, explicitly ignoring
+the available YouTube captions. The run produced 127 stable changed frames and
+314 timestamped transcript segments. `pack` reduced the LLM handoff to a 135-file,
+6.25 MiB ZIP without including the 128.6 MiB source video.
+
+```powershell
+pixi run analyze "https://www.youtube.com/watch?v=2qJ1wrLcgx0" `
+  --asr whisper --language en --model large-v3
+pixi run pack 2qJ1wrLcgx0
+```
+
+The embedded frame is from the talk by teubi / media.ccc.de, licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). It was extracted,
+resized, and composited with the run statistics; no endorsement is implied.
+[Full media attribution](docs/assets/ATTRIBUTION.md).
 
 ## Why yt-decktrace?
 
@@ -37,6 +59,9 @@ pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID"
 
 # Force local Whisper transcription
 pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" --asr whisper
+
+# Force English Whisper transcription (auto, ko, and en are supported)
+pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" --asr whisper --language en
 
 # Tune frame sensitivity or choose a smaller Whisper model
 pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" --threshold 12 --model small
@@ -146,7 +171,7 @@ without treating cursor movement as a new slide.
 | YouTube video and captions | `yt-dlp` |
 | Decode, audio extraction, frame capture | FFmpeg |
 | Stable perceptual change detection | Pillow + ImageHash |
-| Local Korean speech recognition | `faster-whisper` / CTranslate2 |
+| Local speech recognition | `faster-whisper` / CTranslate2 |
 | Subtitle parsing | `pysubs2` |
 | CLI and terminal output | Typer + Rich |
 | Environment and lock file | Pixi |
