@@ -1,44 +1,123 @@
 from __future__ import annotations
 
-import importlib.util
+import importlib.metadata
 import shutil
+import subprocess
+from enum import Enum
+from pathlib import Path
+from typing import Annotated
 
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from yt_decktrace import __version__
+from yt_decktrace.pipeline import analyze_youtube
+from yt_decktrace.runtime import ffmpeg_version, find_ffmpeg, register_nvidia_dll_directories
 
 app = typer.Typer(no_args_is_help=True, help="Prepare YouTube presentations for LLM analysis.")
 console = Console()
 
 
+class AsrMode(str, Enum):
+    auto = "auto"
+    youtube = "youtube"
+    whisper = "whisper"
+
+
+def _package_version(name: str) -> str:
+    try:
+        return importlib.metadata.version(name)
+    except importlib.metadata.PackageNotFoundError:
+        return "not installed"
+
+
 @app.command()
 def doctor() -> None:
-    """Check the local video and CUDA runtime prerequisites."""
+    """Check local video, Python package, and CUDA runtime prerequisites."""
     table = Table(title=f"yt-decktrace {__version__}")
     table.add_column("Component")
     table.add_column("Status")
 
-    ffmpeg = shutil.which("ffmpeg")
-    nvidia_smi = shutil.which("nvidia-smi")
-    table.add_row("FFmpeg", ffmpeg or "not found")
-    table.add_row("NVIDIA driver", nvidia_smi or "not found")
+    ffmpeg = find_ffmpeg()
+    if ffmpeg:
+        try:
+            ffmpeg_status = f"{ffmpeg} ({ffmpeg_version(ffmpeg)})"
+        except (OSError, subprocess.SubprocessError) as error:
+            ffmpeg_status = f"{ffmpeg} (failed: {error})"
+    else:
+        ffmpeg_status = "not found"
+    table.add_row("FFmpeg", ffmpeg_status)
 
-    cuda_status = "faster-whisper not installed"
-    if importlib.util.find_spec("ctranslate2") is not None:
+    nvidia_smi = shutil.which("nvidia-smi")
+    if nvidia_smi:
+        query = subprocess.run(
+            [nvidia_smi, "--query-gpu=name,driver_version", "--format=csv,noheader"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+        driver_status = query.stdout.strip() or nvidia_smi
+    else:
+        driver_status = "not found"
+    table.add_row("NVIDIA driver", driver_status)
+
+    dll_directories = register_nvidia_dll_directories()
+    table.add_row("NVIDIA wheel DLLs", "\n".join(map(str, dll_directories)) or "not installed")
+    try:
         import ctranslate2
 
         cuda_status = f"{ctranslate2.get_cuda_device_count()} CUDA device(s)"
+    except (ImportError, OSError, RuntimeError) as error:
+        cuda_status = f"failed: {error}"
     table.add_row("CTranslate2", cuda_status)
+    table.add_row("faster-whisper", _package_version("faster-whisper"))
+    table.add_row("yt-dlp", _package_version("yt-dlp"))
     console.print(table)
 
 
 @app.command()
 def analyze(
-    source: str = typer.Argument(..., help="YouTube URL."),
-    asr: str = typer.Option("auto", help="Caption policy: auto, youtube, or whisper."),
+    source: Annotated[str, typer.Argument(help="YouTube video URL.")],
+    output: Annotated[
+        Path, typer.Option("--output", "-o", help="Run directory root.")
+    ] = Path("runs"),
+    asr: Annotated[
+        AsrMode,
+        typer.Option(help="Use YouTube Korean captions when available, or local Whisper."),
+    ] = AsrMode.auto,
+    model: Annotated[
+        str, typer.Option(help="faster-whisper model used for local ASR.")
+    ] = "large-v3",
+    sample_fps: Annotated[
+        float, typer.Option(min=0.1, max=10.0, help="Frame sample rate.")
+    ] = 1.0,
+    threshold: Annotated[
+        int, typer.Option(min=1, max=64, help="Perceptual hash change threshold.")
+    ] = 10,
+    min_gap: Annotated[
+        float, typer.Option(min=0.0, help="Minimum seconds between saved frames.")
+    ] = 2.0,
+    force: Annotated[
+        bool, typer.Option(help="Redownload source files and regenerate artifacts.")
+    ] = False,
 ) -> None:
-    """Analyze a YouTube presentation (pipeline implementation follows next)."""
-    console.print(f"[yellow]Pipeline scaffold ready:[/] source={source!r}, asr={asr!r}")
-    raise typer.Exit(code=2)
+    """Create changed-frame and Korean-transcript context from a YouTube video."""
+    console.print(f"[cyan]Analyzing[/] {source}")
+    context_path = analyze_youtube(
+        source,
+        output_root=output,
+        asr=asr.value,
+        whisper_model=model,
+        sample_fps=sample_fps,
+        change_threshold=threshold,
+        min_gap=min_gap,
+        force=force,
+    )
+    console.print(f"[green]Complete:[/] {context_path.resolve()}")
+
+
+if __name__ == "__main__":
+    app()

@@ -10,12 +10,22 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
   "faster-whisper>=1.2,<2",
+  "imagehash>=4.3,<5",
   "pillow>=11,<13",
   "pysubs2>=1.8,<2",
   "rich>=14,<15",
-  "scenedetect[opencv]>=0.7,<0.8",
   "typer>=0.16,<1",
   "yt-dlp>=2026.7.4",
+]
+
+[project.optional-dependencies]
+cuda = [
+  "nvidia-cublas-cu12==12.9.2.10",
+  "nvidia-cudnn-cu12==9.21.0.82",
+]
+dev = [
+  "pytest>=8,<9",
+  "ruff>=0.12,<1",
 ]
 
 [project.scripts]
@@ -33,11 +43,6 @@ platforms = ["win-64"]
 
 [tool.pixi.dependencies]
 python = "3.12.*"
-ffmpeg = "*"
-cuda-version = "12.9.*"
-cuda-cudart = "12.9.*"
-libcublas = ">=12,<13"
-cudnn = ">=9,<10"
 
 [tool.pixi.pypi-dependencies]
 yt-decktrace = { path = ".", editable = true }
@@ -46,13 +51,10 @@ yt-decktrace = { path = ".", editable = true }
 doctor = "yt-decktrace doctor"
 analyze = "yt-decktrace analyze"
 test = "pytest"
-
-[tool.pixi.feature.dev.dependencies]
-pytest = ">=8,<9"
-ruff = ">=0.12,<1"
+lint = "ruff check ."
 
 [tool.pixi.environments]
-default = { features = ["dev"] }
+default = { features = ["cuda", "dev"] }
 
 [tool.ruff]
 line-length = 100

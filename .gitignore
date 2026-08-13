@@ -4,6 +4,7 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+.env
 
 # Generated analysis data and downloaded models are local artifacts.
 runs/*
