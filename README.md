@@ -7,13 +7,13 @@ and timestamped transcripts from presentation videos. Instead of sending every v
 frame to a model, it keeps representative changed frames, aligns them with the
 spoken timeline, and produces Markdown that an LLM can navigate efficiently.
 
+![yt-decktrace overview](docs/assets/overview.svg)
+
 > [!NOTE]
 > The first working pipeline targets Windows x64. FFmpeg and a current NVIDIA
 > display driver are external prerequisites; CPU transcription remains available.
 
 ## Real-world Whisper demo
-
-[![Actual yt-decktrace output from an English AI lecture](docs/assets/example-35c3.svg)](https://www.youtube.com/watch?v=2qJ1wrLcgx0&t=509s)
 
 The 41:07 English talk
 [*35C3 – Introduction to Deep Learning*](https://media.ccc.de/v/35c3-9386-introduction_to_deep_learning)
@@ -28,10 +28,9 @@ pixi run analyze "https://www.youtube.com/watch?v=2qJ1wrLcgx0" `
 pixi run pack 2qJ1wrLcgx0
 ```
 
-The embedded frame is from the talk by teubi / media.ccc.de, licensed under
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). It was extracted,
-resized, and composited with the run statistics; no endorsement is implied.
-[Full media attribution](docs/assets/ATTRIBUTION.md).
+The talk is published by media.ccc.de under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). No lecture media or
+generated run artifact is committed to this repository.
 
 ## Why yt-decktrace?
 
@@ -49,6 +48,8 @@ The pipeline addresses both problems:
 - emit a compact Markdown bundle for GPT and other multimodal LLMs.
 
 ## Usage
+
+![yt-decktrace command usage](docs/assets/usage.svg)
 
 ```powershell
 # Verify FFmpeg, the NVIDIA driver, and CTranslate2 CUDA discovery
@@ -144,20 +145,7 @@ pixi run pack VIDEO_ID --output exports\presentation.zip --force
 
 ## Pipeline design
 
-```text
-YouTube URL
-   │
-   ├── yt-dlp ─────────────── video, metadata, caption tracks
-   │
-   ├── FFmpeg ───────────────── low-rate frame candidates
-   │       └── Pillow + ImageHash ─ stable perceptual changes only
-   │
-   ├── captions ────────────── authored / ko-orig when available
-   │       └── faster-whisper ─ CUDA fallback or explicit re-transcription
-   │
-   └── timeline builder ────── frames + transcript + YouTube links
-                                   └── context.md + timeline.json
-```
+![yt-decktrace processing pipeline](docs/assets/pipeline.svg)
 
 Slide detection samples at a low frame rate, ignores short-lived transitions,
 and captures a stable frame shortly after each detected change. This is intended

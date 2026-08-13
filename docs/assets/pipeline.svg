@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="620" viewBox="0 0 1440 620" role="img" aria-labelledby="title description">
+  <title id="title">yt-decktrace processing pipeline</title>
+  <desc id="description">FFmpeg samples the visual track, Pillow and ImageHash retain distinct stable frames, faster-whisper transcribes speech, and both are aligned by timestamp.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M1 1 L10 6 L1 11 Z" fill="#242424"/>
+    </marker>
+    <style>
+      .title { font: 700 40px 'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .subtitle { font: 400 20px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; }
+      .label { font: 700 23px 'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .body { font: 400 18px 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .small { font: 400 15px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; }
+      .caps { font: 700 14px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; letter-spacing: 2px; }
+      .mono { font: 400 22px Consolas, 'Courier New', monospace; }
+      .light { fill: #ffffff; }
+      .dim { fill: #bdbdbd; }
+      .flow { fill: none; stroke: #242424; stroke-width: 4; stroke-linecap: round; marker-end: url(#arrow); }
+      .thin { fill: none; stroke: #242424; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="620" fill="#fff9e8"/>
+
+  <text x="64" y="76" class="title">Keep changes. Transcribe speech. Align by time.</text>
+  <text x="64" y="112" class="subtitle">Two local pipelines turn one video into a shared evidence timeline.</text>
+
+  <!-- Input -->
+  <rect x="64" y="275" width="150" height="190" rx="22" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <rect x="88" y="303" width="102" height="74" rx="10" fill="#242424"/>
+  <circle cx="139" cy="340" r="20" fill="#ffd21e"/>
+  <path d="M134 329 L134 351 L152 340 Z" fill="#242424"/>
+  <text x="139" y="413" text-anchor="middle" class="label">Video</text>
+  <text x="139" y="442" text-anchor="middle" class="small">one source</text>
+
+  <!-- Visual lane -->
+  <text x="254" y="176" class="caps">VISUAL LANE</text>
+  <path d="M214 330 C238 330 230 226 254 226" class="flow"/>
+  <rect x="270" y="190" width="166" height="76" rx="16" fill="#bdebea" stroke="#242424" stroke-width="3"/>
+  <text x="353" y="223" text-anchor="middle" class="label">FFmpeg</text>
+  <text x="353" y="249" text-anchor="middle" class="small">sample at 1 fps</text>
+  <path d="M452 228 H488" class="flow"/>
+
+  <rect x="504" y="183" width="44" height="78" rx="6" fill="#ebe6dc" stroke="#8d897f" stroke-width="2"/>
+  <circle cx="526" cy="209" r="9" fill="#c8c3b8"/>
+  <path d="M510 248 L525 228 L537 238 L544 230" stroke="#8d897f" stroke-width="3" fill="none"/>
+  <rect x="560" y="183" width="44" height="78" rx="6" fill="#ebe6dc" stroke="#8d897f" stroke-width="2"/>
+  <circle cx="582" cy="209" r="9" fill="#c8c3b8"/>
+  <path d="M566 248 L581 228 L593 238 L600 230" stroke="#8d897f" stroke-width="3" fill="none"/>
+  <rect x="616" y="183" width="44" height="78" rx="6" fill="#fff3ad" stroke="#242424" stroke-width="3"/>
+  <circle cx="638" cy="207" r="9" fill="#ff8a65" stroke="#242424" stroke-width="2"/>
+  <path d="M622 248 L636 225 L649 239 L656 218" class="thin"/>
+  <rect x="672" y="183" width="44" height="78" rx="6" fill="#fff3ad" stroke="#242424" stroke-width="3"/>
+  <rect x="681" y="195" width="26" height="17" rx="3" fill="#d8c7ff" stroke="#242424" stroke-width="2"/>
+  <path d="M679 248 L693 225 L705 237 L712 221" class="thin"/>
+
+  <path d="M732 228 H768" class="flow"/>
+  <rect x="784" y="190" width="226" height="76" rx="16" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
+  <text x="897" y="223" text-anchor="middle" class="label">Pillow + ImageHash</text>
+  <text x="897" y="249" text-anchor="middle" class="small">distance · stability · gap</text>
+  <path d="M1026 228 H1062" class="flow"/>
+
+  <rect x="1078" y="183" width="58" height="78" rx="7" fill="#fff3ad" stroke="#242424" stroke-width="3"/>
+  <circle cx="1107" cy="208" r="10" fill="#ff8a65" stroke="#242424" stroke-width="2"/>
+  <path d="M1085 250 L1103 226 L1118 239 L1129 218" class="thin"/>
+  <rect x="1148" y="183" width="58" height="78" rx="7" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <path d="M1156 248 L1171 224 L1183 237 L1198 215" class="thin"/>
+  <text x="1078" y="294" class="small">distinct frames</text>
+
+  <!-- Audio lane -->
+  <text x="254" y="418" class="caps">SPEECH LANE</text>
+  <path d="M214 406 H254" class="flow"/>
+  <rect x="270" y="438" width="246" height="88" rx="16" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <path d="M294 482 L306 466 L318 499 L330 454 L342 507 L354 470 L366 496 L378 459 L390 501 L402 471 L414 493 L426 463 L438 502 L450 474 L462 493 L492 482" class="thin"/>
+  <text x="393" y="555" text-anchor="middle" class="small">audio waveform</text>
+  <path d="M532 482 H568" class="flow"/>
+
+  <rect x="584" y="438" width="226" height="88" rx="16" fill="#d8c7ff" stroke="#242424" stroke-width="3"/>
+  <text x="697" y="477" text-anchor="middle" class="label">faster-whisper</text>
+  <text x="697" y="505" text-anchor="middle" class="small">local speech recognition</text>
+  <path d="M826 482 H862" class="flow"/>
+
+  <rect x="878" y="426" width="284" height="112" rx="16" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <text x="902" y="460" class="small">[08:29]</text>
+  <text x="980" y="460" class="body">A neural network…</text>
+  <line x1="902" y1="478" x2="1138" y2="478" stroke="#d9d2c2" stroke-width="2"/>
+  <text x="902" y="512" class="small">[08:36]</text>
+  <text x="980" y="512" class="body">The output is…</text>
+
+  <!-- Alignment target -->
+  <path d="M1222 262 V341 H1250" class="flow"/>
+  <path d="M1178 482 H1250" class="flow"/>
+  <rect x="1266" y="326" width="126" height="190" rx="20" fill="#ffb7a7" stroke="#242424" stroke-width="3"/>
+  <text x="1329" y="370" text-anchor="middle" class="caps">ALIGNED</text>
+  <line x1="1292" y1="402" x2="1366" y2="402" class="thin"/>
+  <circle cx="1311" cy="402" r="8" fill="#ffd21e" stroke="#242424" stroke-width="2"/>
+  <circle cx="1347" cy="402" r="8" fill="#bdebea" stroke="#242424" stroke-width="2"/>
+  <line x1="1311" y1="402" x2="1311" y2="443" class="thin"/>
+  <line x1="1347" y1="402" x2="1347" y2="467" class="thin"/>
+  <rect x="1292" y="435" width="38" height="28" rx="4" fill="#fff3ad" stroke="#242424" stroke-width="2"/>
+  <rect x="1328" y="459" width="38" height="28" rx="4" fill="#ffffff" stroke="#242424" stroke-width="2"/>
+  <text x="1329" y="500" text-anchor="middle" class="small">timeline</text>
+
+</svg>
