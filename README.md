@@ -102,7 +102,7 @@ Git.
 
 ## How it works
 
-![yt-decktrace processing pipeline](docs/assets/pipeline.svg)
+![yt-decktrace processing pipeline](docs/assets/pipeline.png)
 
 The visual lane samples the video with FFmpeg, compares perceptual hashes, ignores
 short-lived transitions, and keeps a stable frame shortly after each meaningful
