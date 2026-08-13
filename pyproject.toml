@@ -48,11 +48,11 @@ python = "3.12.*"
 yt-decktrace = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-doctor = "yt-decktrace doctor"
-analyze = "yt-decktrace analyze"
-pack = "yt-decktrace pack"
-test = "pytest"
-lint = "ruff check ."
+doctor = "python -m yt_decktrace doctor"
+analyze = "python -m yt_decktrace analyze"
+pack = "python -m yt_decktrace pack"
+test = "python -m pytest"
+lint = "python -m ruff check ."
 
 [tool.pixi.environments]
 default = { features = ["cuda", "dev"] }

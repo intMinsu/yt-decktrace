@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="610" viewBox="0 0 1440 610" role="img" aria-labelledby="title description">
+  <title id="title">yt-decktrace overview</title>
+  <desc id="description">A YouTube video passes through yt-decktrace and becomes distinct frames, timestamped dialogue, context Markdown, and LLM input.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M1 1 L10 6 L1 11 Z" fill="#242424"/>
+    </marker>
+    <style>
+      .title { font: 700 40px 'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .subtitle { font: 400 20px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; }
+      .label { font: 700 23px 'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .body { font: 400 18px 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .small { font: 400 15px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; }
+      .caps { font: 700 14px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; letter-spacing: 2px; }
+      .mono { font: 400 22px Consolas, 'Courier New', monospace; }
+      .light { fill: #ffffff; }
+      .dim { fill: #bdbdbd; }
+      .flow { fill: none; stroke: #242424; stroke-width: 4; stroke-linecap: round; marker-end: url(#arrow); }
+      .thin { fill: none; stroke: #242424; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="610" fill="#fff9e8"/>
+
+  <defs>
+    <marker id="overview-arrow" viewBox="0 0 9 9" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M1 1 L8 4.5 L1 8" fill="none" stroke="#242424" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .overview-flow { fill: none; stroke: #242424; stroke-width: 3; stroke-linecap: round; marker-end: url(#overview-arrow); }
+    </style>
+  </defs>
+  <text x="64" y="76" class="title">From lecture video to LLM-ready context</text>
+  <text x="64" y="112" class="subtitle">Keep the visual changes and spoken evidence. Leave the repetition behind.</text>
+
+  <!-- Source video -->
+  <rect x="64" y="180" width="250" height="310" rx="22" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <text x="92" y="218" class="caps">YOUTUBE VIDEO</text>
+  <rect x="92" y="240" width="194" height="120" rx="12" fill="#242424"/>
+  <circle cx="189" cy="300" r="30" fill="#ffd21e"/>
+  <path d="M182 284 L182 316 L208 300 Z" fill="#242424"/>
+  <line x1="92" y1="391" x2="286" y2="391" stroke="#d9d2c2" stroke-width="8" stroke-linecap="round"/>
+  <line x1="92" y1="391" x2="211" y2="391" stroke="#ff8a65" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="211" cy="391" r="8" fill="#242424"/>
+  <path d="M96 443 L108 432 L120 451 L132 423 L144 454 L156 435 L168 447 L180 427 L192 453 L204 438 L216 448 L228 429 L240 451 L252 436 L282 443" class="thin"/>
+  <text x="92" y="472" class="small">slides · screen · speech</text>
+
+  <path d="M330 335 H378" class="overview-flow"/>
+
+  <!-- yt-decktrace engine -->
+  <rect x="394" y="210" width="292" height="250" rx="28" fill="#ffd21e" stroke="#242424" stroke-width="4"/>
+  <rect x="438" y="255" width="92" height="62" rx="8" fill="#fff9e8" stroke="#242424" stroke-width="3" transform="rotate(-7 484 286)"/>
+  <rect x="462" y="260" width="92" height="62" rx="8" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <path d="M488 277 L488 305 L511 291 Z" fill="#ff8a65" stroke="#242424" stroke-width="2"/>
+  <circle cx="577" cy="290" r="8" fill="#242424"/>
+  <circle cx="607" cy="290" r="8" fill="#242424"/>
+  <circle cx="637" cy="290" r="8" fill="#242424"/>
+  <line x1="585" y1="290" x2="599" y2="290" class="thin"/>
+  <line x1="615" y1="290" x2="629" y2="290" class="thin"/>
+  <text x="540" y="366" text-anchor="middle" class="label">yt-decktrace</text>
+  <text x="540" y="401" text-anchor="middle" class="body">extract · transcribe · align</text>
+
+  <path d="M702 335 H730" class="overview-flow"/>
+
+  <!-- Evidence bundle -->
+  <rect x="746" y="133" width="386" height="404" rx="24" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <rect x="766" y="153" width="346" height="110" rx="18" fill="#bdebea" stroke="#242424" stroke-width="3"/>
+  <rect x="795" y="183" width="70" height="48" rx="6" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <rect x="808" y="172" width="70" height="48" rx="6" fill="#fff9e8" stroke="#242424" stroke-width="3"/>
+  <circle cx="832" cy="191" r="8" fill="#ffd21e" stroke="#242424" stroke-width="2"/>
+  <path d="M812 215 L832 199 L846 208 L861 192 L875 216" class="thin"/>
+  <text x="902" y="199" class="label">Distinct frames</text>
+  <text x="902" y="230" class="small">only stable visual changes</text>
+
+  <rect x="766" y="280" width="346" height="110" rx="18" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <circle cx="834" cy="335" r="30" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
+  <path d="M834 316 V335 L848 344" class="thin"/>
+  <text x="886" y="327" class="label">[08:29] Dialogue</text>
+  <text x="886" y="358" class="small">timestamped speech segments</text>
+
+  <rect x="766" y="407" width="346" height="110" rx="18" fill="#d8c7ff" stroke="#242424" stroke-width="3"/>
+  <path d="M805 433 H850 L869 452 V493 H805 Z" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <path d="M850 433 V452 H869" class="thin"/>
+  <text x="895" y="458" class="label">context.md</text>
+  <text x="895" y="489" class="small">frames + transcript + links</text>
+
+  <path d="M1148 335 H1176" class="overview-flow"/>
+
+  <!-- LLM target -->
+  <rect x="1192" y="218" width="184" height="235" rx="28" fill="#ffb7a7" stroke="#242424" stroke-width="4"/>
+  <path d="M1264 265 L1274 288 L1297 298 L1274 308 L1264 331 L1254 308 L1231 298 L1254 288 Z" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
+  <path d="M1323 262 L1328 274 L1340 279 L1328 284 L1323 296 L1318 284 L1306 279 L1318 274 Z" fill="#ffffff" stroke="#242424" stroke-width="2"/>
+  <text x="1284" y="376" text-anchor="middle" class="label">LLM input</text>
+  <text x="1284" y="408" text-anchor="middle" class="small">visual + text</text>
+
+</svg>

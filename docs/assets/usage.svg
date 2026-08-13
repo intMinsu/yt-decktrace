@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="630" viewBox="0 0 1440 630" role="img" aria-labelledby="title description">
+  <title id="title">yt-decktrace command usage</title>
+  <desc id="description">A Pixi analyze command produces video, distinct frames, transcript, and context Markdown; an optional pack command creates an LLM-ready ZIP archive.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M1 1 L10 6 L1 11 Z" fill="#242424"/>
+    </marker>
+    <style>
+      .title { font: 700 40px 'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .subtitle { font: 400 20px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; }
+      .label { font: 700 23px 'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .body { font: 400 18px 'Trebuchet MS', Arial, sans-serif; fill: #242424; }
+      .small { font: 400 15px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; }
+      .caps { font: 700 14px 'Trebuchet MS', Arial, sans-serif; fill: #5c5c5c; letter-spacing: 2px; }
+      .mono { font: 400 22px Consolas, 'Courier New', monospace; }
+      .light { fill: #ffffff; }
+      .dim { fill: #bdbdbd; }
+      .flow { fill: none; stroke: #242424; stroke-width: 4; stroke-linecap: round; marker-end: url(#arrow); }
+      .thin { fill: none; stroke: #242424; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="630" fill="#fff9e8"/>
+
+  <text x="64" y="76" class="title">One command builds the evidence bundle</text>
+  <text x="64" y="112" class="subtitle">Pixi runs the reproducible environment; yt-decktrace handles the pipeline.</text>
+
+  <!-- Terminal -->
+  <rect x="64" y="158" width="1312" height="276" rx="22" fill="#242424" stroke="#242424" stroke-width="3"/>
+  <circle cx="98" cy="190" r="8" fill="#ff8a65"/>
+  <circle cx="124" cy="190" r="8" fill="#ffd21e"/>
+  <circle cx="150" cy="190" r="8" fill="#75d6b2"/>
+  <text x="98" y="257" class="mono" fill="#ffd21e">$</text>
+  <text x="130" y="257" class="mono" fill="#ffffff">pixi run analyze "YOUTUBE_URL" --asr whisper --language en</text>
+  <line x1="98" y1="292" x2="1342" y2="292" stroke="#555555" stroke-width="2"/>
+
+  <circle cx="118" cy="344" r="13" fill="#75d6b2"/>
+  <path d="M111 344 L116 350 L126 337" fill="none" stroke="#242424" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="145" y="351" class="body light">video</text>
+  <circle cx="376" cy="344" r="13" fill="#75d6b2"/>
+  <path d="M369 344 L374 350 L384 337" fill="none" stroke="#242424" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="403" y="351" class="body light">distinct frames</text>
+  <circle cx="726" cy="344" r="13" fill="#75d6b2"/>
+  <path d="M719 344 L724 350 L734 337" fill="none" stroke="#242424" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="753" y="351" class="body light">transcript</text>
+  <circle cx="1014" cy="344" r="13" fill="#75d6b2"/>
+  <path d="M1007 344 L1012 350 L1022 337" fill="none" stroke="#242424" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1041" y="351" class="body light">context.md</text>
+  <text x="98" y="401" class="small dim">Complete: runs/VIDEO_ID/bundle/context.md</text>
+
+  <!-- Pack step -->
+  <rect x="215" y="486" width="390" height="92" rx="18" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
+  <text x="410" y="524" text-anchor="middle" class="caps">OPTIONAL HANDOFF</text>
+  <text x="410" y="554" text-anchor="middle" class="mono" fill="#242424">pixi run pack VIDEO_ID</text>
+  <path d="M623 532 H762" class="flow"/>
+
+  <rect x="780" y="474" width="440" height="116" rx="20" fill="#d8c7ff" stroke="#242424" stroke-width="3"/>
+  <path d="M818 497 H866 L886 517 V566 H818 Z" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <path d="M866 497 V517 H886" class="thin"/>
+  <text x="918" y="526" class="label">yt-decktrace-VIDEO_ID.zip</text>
+  <text x="918" y="558" class="small">ready to attach to a multimodal LLM</text>
+
+</svg>

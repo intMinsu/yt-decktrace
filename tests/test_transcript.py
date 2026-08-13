@@ -1,6 +1,13 @@
 import json
 
-from yt_decktrace.transcript import Segment, merge_segments, parse_json3
+import pytest
+
+from yt_decktrace.transcript import (
+    Segment,
+    merge_segments,
+    parse_json3,
+    resolve_whisper_language,
+)
 
 
 def test_parse_and_merge_json3(tmp_path) -> None:
@@ -22,3 +29,11 @@ def test_parse_and_merge_json3(tmp_path) -> None:
 
     assert parsed == [Segment(1.0, 2.0, "안녕"), Segment(2.1, 3.1, "하세요")]
     assert merge_segments(parsed) == [Segment(1.0, 3.1, "안녕 하세요")]
+
+
+def test_resolve_whisper_language() -> None:
+    assert resolve_whisper_language("auto") is None
+    assert resolve_whisper_language("ko") == "ko"
+    assert resolve_whisper_language("en") == "en"
+    with pytest.raises(ValueError, match="auto, ko, en"):
+        resolve_whisper_language("fr")

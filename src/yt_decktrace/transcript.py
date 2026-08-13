@@ -80,6 +80,7 @@ def transcribe_with_whisper(
     *,
     model_name: str,
     device: str = "auto",
+    language: str = "auto",
 ) -> tuple[list[Segment], dict[str, str]]:
     register_nvidia_dll_directories()
     import ctranslate2
@@ -99,9 +100,10 @@ def transcribe_with_whisper(
         compute_type = "int8"
         model = WhisperModel(model_name, device=selected_device, compute_type=compute_type)
 
+    language_code = resolve_whisper_language(language)
     raw_segments, info = model.transcribe(
         str(media_path),
-        language="ko",
+        language=language_code,
         vad_filter=True,
         condition_on_previous_text=True,
     )
@@ -116,6 +118,7 @@ def transcribe_with_whisper(
         "device": selected_device,
         "compute_type": compute_type,
         "language": info.language,
+        "requested_language": language,
     }
     return merge_segments(segments), details
 
@@ -132,9 +135,18 @@ def write_transcript(
         directory / "segments.json",
         {"details": details, "segments": [asdict(segment) for segment in segments]},
     )
-    lines = ["# Korean transcript", ""]
+    language = details.get("language", "unknown")
+    lines = [f"# Transcript ({language})", ""]
     for segment in segments:
         timestamp = format_timestamp(segment.start)
         link = youtube_timestamp_url(source_url, segment.start)
         lines.extend((f"- [{timestamp}]({link}) {segment.text}", ""))
     (directory / "transcript.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def resolve_whisper_language(language: str) -> str | None:
+    supported = {"auto": None, "ko": "ko", "en": "en"}
+    try:
+        return supported[language]
+    except KeyError as error:
+        raise ValueError("language must be one of: auto, ko, en") from error
