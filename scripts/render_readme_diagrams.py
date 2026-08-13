@@ -39,6 +39,14 @@ def document(title: str, description: str, height: int, content: str) -> str:
 
 
 OVERVIEW = """
+  <defs>
+    <marker id="overview-arrow" viewBox="0 0 9 9" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M1 1 L8 4.5 L1 8" fill="none" stroke="#242424" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .overview-flow { fill: none; stroke: #242424; stroke-width: 3; stroke-linecap: round; marker-end: url(#overview-arrow); }
+    </style>
+  </defs>
   <text x="64" y="76" class="title">From lecture video to LLM-ready context</text>
   <text x="64" y="112" class="subtitle">Keep the visual changes and spoken evidence. Leave the repetition behind.</text>
 
@@ -54,7 +62,7 @@ OVERVIEW = """
   <path d="M96 443 L108 432 L120 451 L132 423 L144 454 L156 435 L168 447 L180 427 L192 453 L204 438 L216 448 L228 429 L240 451 L252 436 L282 443" class="thin"/>
   <text x="92" y="472" class="small">slides · screen · speech</text>
 
-  <path d="M332 334 H378" class="flow"/>
+  <path d="M330 335 H378" class="overview-flow"/>
 
   <!-- yt-decktrace engine -->
   <rect x="394" y="210" width="292" height="250" rx="28" fill="#ffd21e" stroke="#242424" stroke-width="4"/>
@@ -69,37 +77,38 @@ OVERVIEW = """
   <text x="540" y="366" text-anchor="middle" class="label">yt-decktrace</text>
   <text x="540" y="401" text-anchor="middle" class="body">extract · transcribe · align</text>
 
-  <path d="M704 334 H750" class="flow"/>
+  <path d="M702 335 H730" class="overview-flow"/>
 
   <!-- Evidence bundle -->
-  <rect x="766" y="165" width="346" height="110" rx="18" fill="#bdebea" stroke="#242424" stroke-width="3"/>
-  <rect x="795" y="195" width="70" height="48" rx="6" fill="#ffffff" stroke="#242424" stroke-width="3"/>
-  <rect x="808" y="184" width="70" height="48" rx="6" fill="#fff9e8" stroke="#242424" stroke-width="3"/>
-  <circle cx="832" cy="203" r="8" fill="#ffd21e" stroke="#242424" stroke-width="2"/>
-  <path d="M812 227 L832 211 L846 220 L861 204 L875 228" class="thin"/>
-  <text x="902" y="211" class="label">Distinct frames</text>
-  <text x="902" y="242" class="small">only stable visual changes</text>
+  <rect x="746" y="133" width="386" height="404" rx="24" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <rect x="766" y="153" width="346" height="110" rx="18" fill="#bdebea" stroke="#242424" stroke-width="3"/>
+  <rect x="795" y="183" width="70" height="48" rx="6" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <rect x="808" y="172" width="70" height="48" rx="6" fill="#fff9e8" stroke="#242424" stroke-width="3"/>
+  <circle cx="832" cy="191" r="8" fill="#ffd21e" stroke="#242424" stroke-width="2"/>
+  <path d="M812 215 L832 199 L846 208 L861 192 L875 216" class="thin"/>
+  <text x="902" y="199" class="label">Distinct frames</text>
+  <text x="902" y="230" class="small">only stable visual changes</text>
 
-  <rect x="766" y="292" width="346" height="110" rx="18" fill="#ffffff" stroke="#242424" stroke-width="3"/>
-  <circle cx="834" cy="347" r="30" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
-  <path d="M834 328 V347 L848 356" class="thin"/>
-  <text x="886" y="339" class="label">[08:29] Dialogue</text>
-  <text x="886" y="370" class="small">timestamped speech segments</text>
+  <rect x="766" y="280" width="346" height="110" rx="18" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <circle cx="834" cy="335" r="30" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
+  <path d="M834 316 V335 L848 344" class="thin"/>
+  <text x="886" y="327" class="label">[08:29] Dialogue</text>
+  <text x="886" y="358" class="small">timestamped speech segments</text>
 
-  <rect x="766" y="419" width="346" height="110" rx="18" fill="#d8c7ff" stroke="#242424" stroke-width="3"/>
-  <path d="M805 445 H850 L869 464 V505 H805 Z" fill="#ffffff" stroke="#242424" stroke-width="3"/>
-  <path d="M850 445 V464 H869" class="thin"/>
-  <text x="895" y="470" class="label">context.md</text>
-  <text x="895" y="501" class="small">frames + transcript + links</text>
+  <rect x="766" y="407" width="346" height="110" rx="18" fill="#d8c7ff" stroke="#242424" stroke-width="3"/>
+  <path d="M805 433 H850 L869 452 V493 H805 Z" fill="#ffffff" stroke="#242424" stroke-width="3"/>
+  <path d="M850 433 V452 H869" class="thin"/>
+  <text x="895" y="458" class="label">context.md</text>
+  <text x="895" y="489" class="small">frames + transcript + links</text>
 
-  <path d="M1130 347 H1176" class="flow"/>
+  <path d="M1148 335 H1176" class="overview-flow"/>
 
   <!-- LLM target -->
-  <rect x="1192" y="230" width="184" height="235" rx="28" fill="#ffb7a7" stroke="#242424" stroke-width="4"/>
-  <path d="M1264 277 L1274 300 L1297 310 L1274 320 L1264 343 L1254 320 L1231 310 L1254 300 Z" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
-  <path d="M1323 274 L1328 286 L1340 291 L1328 296 L1323 308 L1318 296 L1306 291 L1318 286 Z" fill="#ffffff" stroke="#242424" stroke-width="2"/>
-  <text x="1284" y="388" text-anchor="middle" class="label">LLM input</text>
-  <text x="1284" y="420" text-anchor="middle" class="small">visual + text</text>
+  <rect x="1192" y="218" width="184" height="235" rx="28" fill="#ffb7a7" stroke="#242424" stroke-width="4"/>
+  <path d="M1264 265 L1274 288 L1297 298 L1274 308 L1264 331 L1254 308 L1231 298 L1254 288 Z" fill="#ffd21e" stroke="#242424" stroke-width="3"/>
+  <path d="M1323 262 L1328 274 L1340 279 L1328 284 L1323 296 L1318 284 L1306 279 L1318 274 Z" fill="#ffffff" stroke="#242424" stroke-width="2"/>
+  <text x="1284" y="376" text-anchor="middle" class="label">LLM input</text>
+  <text x="1284" y="408" text-anchor="middle" class="small">visual + text</text>
 """
 
 
