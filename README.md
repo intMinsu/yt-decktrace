@@ -6,7 +6,7 @@ Turn YouTube presentations into timestamped, LLM-ready context bundles.
 transcribes the spoken timeline, and packages both as Markdown an LLM can navigate.
 It avoids the cost and noise of sending every video frame to a model.
 
-![yt-decktrace overview](docs/assets/overview.svg)
+![yt-decktrace overview](docs/assets/overview.png)
 
 > [!NOTE]
 > The first working environment targets Windows x64. Install
