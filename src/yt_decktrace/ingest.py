@@ -18,6 +18,7 @@ class CaptionChoice:
     language: str
     extension: str
     source: str
+    is_original: bool = False
 
 
 @dataclass(frozen=True)
@@ -56,21 +57,160 @@ def _caption_candidates(source_dir: Path, choice: CaptionChoice | None) -> list[
     return list(source_dir.glob(f"*.{choice.language}.{choice.extension}"))
 
 
-def choose_korean_caption(info: dict[str, Any]) -> CaptionChoice | None:
-    """Prefer authored Korean captions, then YouTube's original Korean ASR track."""
+def _language_base(language: str) -> str:
+    normalized = language.lower().replace("_", "-")
+    if normalized.endswith("-orig"):
+        normalized = normalized.removesuffix("-orig")
+    return normalized.split("-", maxsplit=1)[0]
+
+
+def caption_language_code(language: str) -> str:
+    """Return a normalized language code without yt-dlp's ``-orig`` suffix."""
+    normalized = language.replace("_", "-")
+    return normalized.removesuffix("-orig")
+
+
+def _supported_tracks(tracks: dict[str, list[dict[str, Any]]]) -> list[str]:
+    return [language for language, formats in tracks.items() if _pick_format(formats)]
+
+
+def _ordered_language_matches(languages: list[str], requested: str) -> list[str]:
+    requested_normalized = requested.lower().replace("_", "-")
+    requested_base = _language_base(requested_normalized)
+    exact = [item for item in languages if item.lower() == requested_normalized]
+    base_exact = [
+        item
+        for item in languages
+        if item not in exact and item.lower() == requested_base
+    ]
+    regional = [
+        item
+        for item in languages
+        if item not in exact
+        and item not in base_exact
+        and _language_base(item) == requested_base
+    ]
+    return exact + base_exact + regional
+
+
+def _make_choice(
+    tracks: dict[str, list[dict[str, Any]]],
+    language: str,
+    *,
+    source: str,
+    original_language: str | None,
+) -> CaptionChoice | None:
+    extension = _pick_format(tracks[language])
+    if extension is None:
+        return None
+    is_original = language.lower().endswith("-orig") or (
+        original_language is not None
+        and _language_base(language) == _language_base(original_language)
+    )
+    return CaptionChoice(language, extension, source, is_original)
+
+
+def choose_caption(
+    info: dict[str, Any],
+    requested_language: str = "original",
+) -> CaptionChoice | None:
+    """Choose an authored or automatic caption track with explicit provenance."""
+    if requested_language not in {"original", "ko", "en"}:
+        raise ValueError("caption language must be one of: original, ko, en")
+
     authored = info.get("subtitles") or {}
     automatic = info.get("automatic_captions") or {}
-    language_order = ("ko", "ko-KR", "ko-orig")
+    original_language = info.get("language")
+    authored_languages = _supported_tracks(authored)
+    automatic_languages = _supported_tracks(automatic)
 
-    for source_name, tracks in (("authored", authored), ("automatic", automatic)):
-        keys = list(tracks)
-        ordered = [key for key in language_order if key in tracks]
-        ordered.extend(key for key in keys if key.startswith("ko") and key not in ordered)
-        for language in ordered:
-            extension = _pick_format(tracks[language])
-            if extension:
-                return CaptionChoice(language, extension, source_name)
+    if requested_language == "original":
+        if isinstance(original_language, str) and original_language:
+            for language in _ordered_language_matches(authored_languages, original_language):
+                choice = _make_choice(
+                    authored,
+                    language,
+                    source="authored",
+                    original_language=original_language,
+                )
+                if choice:
+                    return choice
+
+        original_automatic = [
+            language for language in automatic_languages if language.lower().endswith("-orig")
+        ]
+        if isinstance(original_language, str) and original_language:
+            matching_original = _ordered_language_matches(
+                original_automatic,
+                original_language,
+            )
+            original_automatic = matching_original + [
+                language for language in original_automatic if language not in matching_original
+            ]
+        for language in original_automatic:
+            choice = _make_choice(
+                automatic,
+                language,
+                source="automatic",
+                original_language=original_language,
+            )
+            if choice:
+                return choice
+
+        if isinstance(original_language, str) and original_language:
+            for language in _ordered_language_matches(automatic_languages, original_language):
+                choice = _make_choice(
+                    automatic,
+                    language,
+                    source="automatic",
+                    original_language=original_language,
+                )
+                if choice:
+                    return choice
+
+        if len(authored_languages) == 1:
+            return _make_choice(
+                authored,
+                authored_languages[0],
+                source="authored",
+                original_language=original_language,
+            )
+        return None
+
+    original_base = (
+        _language_base(original_language)
+        if isinstance(original_language, str) and original_language
+        else None
+    )
+    for language in _ordered_language_matches(authored_languages, requested_language):
+        choice = _make_choice(
+            authored,
+            language,
+            source="authored",
+            original_language=original_language,
+        )
+        if choice:
+            return choice
+
+    automatic_matches = _ordered_language_matches(automatic_languages, requested_language)
+    if original_base == requested_language:
+        originals = [item for item in automatic_matches if item.lower().endswith("-orig")]
+        automatic_matches = originals + [item for item in automatic_matches if item not in originals]
+    for language in automatic_matches:
+        choice = _make_choice(
+            automatic,
+            language,
+            source="automatic",
+            original_language=original_language,
+        )
+        if choice:
+            return choice
     return None
+
+
+def choose_korean_caption(info: dict[str, Any]) -> CaptionChoice | None:
+    """Backward-compatible wrapper for callers selecting Korean captions."""
+    return choose_caption(info, "ko")
 
 
 def inspect_youtube(url: str) -> dict[str, Any]:
@@ -101,6 +241,7 @@ def ingest_youtube(
     output_root: Path,
     *,
     caption_policy: str = "auto",
+    caption_language: str = "original",
     force: bool = False,
 ) -> IngestResult:
     info = inspect_youtube(url)
@@ -110,9 +251,15 @@ def ingest_youtube(
     source_dir.mkdir(parents=True, exist_ok=True)
     metadata_path = source_dir / "metadata.json"
 
-    choice = None if caption_policy == "whisper" else choose_korean_caption(info)
+    choice = (
+        None
+        if caption_policy == "whisper"
+        else choose_caption(info, requested_language=caption_language)
+    )
     if caption_policy == "youtube" and choice is None:
-        raise RuntimeError("No Korean authored or automatic YouTube caption track was found")
+        raise RuntimeError(
+            f"No {caption_language} authored or automatic YouTube caption track was found"
+        )
 
     video_candidates = _video_candidates(source_dir)
     caption_candidates = _caption_candidates(source_dir, choice)

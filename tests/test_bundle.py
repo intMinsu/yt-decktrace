@@ -19,6 +19,10 @@ def test_bundle_aligns_transcript_with_frame_intervals(tmp_path) -> None:
     assert "https://youtu.be/video?t=10s" in markdown
     assert "../frames/00-00-10.jpg" in markdown
     assert [item["transcript"][0]["text"] for item in timeline] == ["첫 번째", "두 번째"]
+    assert [item["transcript"][0]["id"] for item in timeline] == [
+        "segment-000001",
+        "segment-000002",
+    ]
 
 
 def test_segment_spanning_a_change_is_not_duplicated(tmp_path) -> None:
