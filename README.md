@@ -64,9 +64,16 @@ pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID"
 pixi run pack VIDEO_ID
 ```
 
-By default, `analyze` uses an available Korean YouTube caption track and falls
-back to local Whisper. To ignore captions and transcribe English speech locally
-on macOS or in the default Windows CPU environment:
+By default, `analyze` preserves an original-language YouTube caption track and
+falls back to local Whisper. To intentionally select a Korean YouTube track:
+
+```bash
+pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" \
+  --asr youtube --caption-language ko
+```
+
+To ignore captions and transcribe English speech locally on macOS or in the
+default Windows CPU environment:
 
 ```bash
 pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" \
@@ -84,6 +91,7 @@ yt-decktrace analyze "https://www.youtube.com/watch?v=VIDEO_ID"
 | Option | Purpose |
 | --- | --- |
 | `--asr auto\|youtube\|whisper` | Select the transcript source |
+| `--caption-language original\|ko\|en` | Select a YouTube caption language |
 | `--language auto\|ko\|en` | Set Whisper language or enable detection |
 | `--model MODEL` | Select a `faster-whisper` model |
 | `--threshold N` | Adjust perceptual frame-change sensitivity |
@@ -101,14 +109,16 @@ runs/VIDEO_ID/
 ├── manifest.json
 ├── source/
 │   ├── metadata.json
-│   └── captions.ko-orig.json3
+│   └── captions.en-orig.json3
 ├── frames/
 │   ├── frames.json
 │   ├── 00-00-04.jpg
 │   └── 00-03-12.jpg
 ├── transcript/
-│   ├── segments.json
-│   └── transcript.md
+│   ├── segments.source.json
+│   ├── transcript.source.md
+│   ├── segments.ko.json        # optional registered translation
+│   └── transcript.ko.md        # optional registered translation
 └── bundle/
     ├── context.md
     ├── timeline.json
@@ -137,8 +147,9 @@ Git.
 
 The visual lane samples the video with FFmpeg, compares perceptual hashes, ignores
 short-lived transitions, and keeps a stable frame shortly after each meaningful
-change. The speech lane uses an authored caption track when appropriate or local
-`faster-whisper`. Both lanes are aligned by timestamp into one evidence timeline.
+change. The speech lane prefers an original-language authored or automatic
+caption track and falls back to local `faster-whisper`. Both lanes are aligned by
+timestamp into one evidence timeline.
 
 This design handles slide decks, IDE demos, and browser-based technical
 presentations without treating every cursor movement or repeated frame as new
@@ -181,8 +192,10 @@ bundle/context.md
 bundle/timeline.json
 frames/*.jpg
 frames/frames.json
-transcript/transcript.md
-transcript/segments.json
+transcript/transcript.source.md
+transcript/segments.source.json
+transcript/transcript.LANG.md  # when a translation is registered
+transcript/segments.LANG.json  # when a translation is registered
 source/metadata.json
 ```
 
@@ -193,6 +206,23 @@ Read START_HERE.md first. Analyze the lecture using the transcript and relevant
 frames together. Cite the YouTube timestamps for every important claim, and
 separate what is visible on screen from what the speaker says.
 ```
+
+### Translate with Codex without replacing the source
+
+Ask Codex to translate `transcript/segments.source.json` while preserving every
+segment ID and its order. Register the returned text-only JSON so the tool copies
+timestamps from the source and records translation provenance:
+
+```bash
+pixi run add-translation VIDEO_ID translation.ko.json \
+  --language ko --provider codex --model MODEL_NAME
+pixi run pack VIDEO_ID --force
+```
+
+See [Source-first transcript and translation workflow](docs/source-first-translation.md)
+for the translation input contract, prompt template, validation rules, and
+manifest schema. The source transcript is always bundled; a translation is
+included only when its digest and segment alignment validate.
 
 Archive entries use stable ordering and timestamps, so identical run artifacts
 produce an identical ZIP. Use `--output` to choose a destination or `--force` to
@@ -244,7 +274,8 @@ pixi.lock            Reproducible environment lock
 
 ## Project status
 
-- [x] YouTube ingest and Korean caption selection
+- [x] Original-language YouTube caption selection with explicit overrides
+- [x] Source-preserving, provenance-tracked translation import
 - [x] Changed-frame detection and perceptual deduplication
 - [x] CUDA/CPU `faster-whisper` fallback
 - [x] Timestamp alignment and Markdown bundle generation

@@ -57,6 +57,7 @@ platforms = ["win-64"]
 [tool.pixi.tasks]
 doctor = "python -m yt_decktrace doctor"
 analyze = "python -m yt_decktrace analyze"
+add-translation = "python -m yt_decktrace add-translation"
 pack = "python -m yt_decktrace pack"
 test = "python -m pytest"
 lint = "python -m ruff check ."

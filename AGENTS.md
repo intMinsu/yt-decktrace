@@ -23,8 +23,22 @@
 - Tests should use small generated fixtures or metadata fixtures instead of
   copyrighted media.
 
+## Transcript and translation policy
+
+- Preserve the original-language transcript as immutable source evidence.
+- Never replace source transcript files with translated text.
+- Keep source segment IDs and timestamps unchanged during translation.
+- Store translations as separate derived artifacts and record their language,
+  provider, model, creation time, and source digest in `manifest.json`.
+- Bundle the source transcript unconditionally and registered translations only
+  when their source digest and segment alignment validate.
+- Keep user-facing workflow details in `docs/source-first-translation.md`; this
+  file defines contributor invariants rather than replacing user documentation.
+
 ## Validation
 
 - Run `pixi run lint` and `pixi run test` for code changes.
 - Keep the Windows CPU path usable even when the optional CUDA runtime cannot be
   loaded.
+- Add fixture-based tests whenever transcript, translation, manifest, or bundle
+  schemas change.

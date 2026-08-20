@@ -16,6 +16,7 @@ from yt_decktrace import __version__
 from yt_decktrace.pack import pack_run
 from yt_decktrace.pipeline import analyze_youtube
 from yt_decktrace.runtime import ffmpeg_version, find_ffmpeg, register_nvidia_dll_directories
+from yt_decktrace.translation import add_translation
 
 app = typer.Typer(no_args_is_help=True, help="Prepare YouTube presentations for LLM analysis.")
 console = Console()
@@ -29,6 +30,12 @@ class AsrMode(str, Enum):
 
 class WhisperLanguage(str, Enum):
     auto = "auto"
+    ko = "ko"
+    en = "en"
+
+
+class CaptionLanguage(str, Enum):
+    original = "original"
     ko = "ko"
     en = "en"
 
@@ -110,8 +117,15 @@ def analyze(
     ] = Path("runs"),
     asr: Annotated[
         AsrMode,
-        typer.Option(help="Use YouTube Korean captions when available, or local Whisper."),
+        typer.Option(help="Use a matching YouTube caption when available, or local Whisper."),
     ] = AsrMode.auto,
+    caption_language: Annotated[
+        CaptionLanguage,
+        typer.Option(
+            "--caption-language",
+            help="Select the original, Korean, or English YouTube caption track.",
+        ),
+    ] = CaptionLanguage.original,
     model: Annotated[
         str, typer.Option(help="faster-whisper model used for local ASR.")
     ] = "large-v3",
@@ -138,6 +152,7 @@ def analyze(
         source,
         output_root=output,
         asr=asr.value,
+        caption_language=caption_language.value,
         whisper_model=model,
         whisper_language=language.value,
         sample_fps=sample_fps,
@@ -146,6 +161,46 @@ def analyze(
         force=force,
     )
     console.print(f"[green]Complete:[/] {context_path.resolve()}")
+
+
+@app.command("add-translation")
+def add_translation_command(
+    video_id: Annotated[str, typer.Argument(help="Completed run's YouTube video ID.")],
+    translation: Annotated[
+        Path,
+        typer.Argument(help="JSON file containing translated segment ids and text."),
+    ],
+    model: Annotated[
+        str,
+        typer.Option("--model", help="Translation model recorded in provenance."),
+    ],
+    runs_root: Annotated[
+        Path, typer.Option("--runs-root", "-r", help="Run directory root.")
+    ] = Path("runs"),
+    language: Annotated[
+        str, typer.Option("--language", help="Translation language code.")
+    ] = "ko",
+    provider: Annotated[
+        str, typer.Option("--provider", help="Translation provider recorded in provenance.")
+    ] = "codex",
+    force: Annotated[
+        bool, typer.Option(help="Replace an existing translation in this language.")
+    ] = False,
+) -> None:
+    """Validate and register a timestamp-preserving transcript translation."""
+    result = add_translation(
+        video_id,
+        translation,
+        language=language,
+        provider=provider,
+        model=model,
+        runs_root=runs_root,
+        force=force,
+    )
+    console.print(
+        f"[green]Added translation:[/] {result.segment_count} {result.language} segments "
+        f"from {result.source_digest}: {result.markdown_path}"
+    )
 
 
 @app.command()

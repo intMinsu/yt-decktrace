@@ -5,6 +5,8 @@ import zipfile
 import pytest
 
 from yt_decktrace.pack import pack_run
+from yt_decktrace.transcript import Segment, write_transcript
+from yt_decktrace.translation import add_translation
 
 
 def _write_json(path, value) -> None:
@@ -58,6 +60,69 @@ def test_pack_run_creates_compact_gpt_archive(tmp_path) -> None:
         start_here = archive.read("START_HERE.md").decode("utf-8")
         assert "테스트 발표" in start_here
         assert "파일을 실제로 열어" in start_here
+
+
+def test_pack_run_includes_source_and_registered_translation(tmp_path) -> None:
+    run = _make_run(tmp_path)
+    (run / "transcript" / "segments.json").unlink()
+    (run / "transcript" / "transcript.md").unlink()
+    details = {"source": "youtube-automatic", "source_language": "en"}
+    artifacts = write_transcript(
+        run / "transcript",
+        [Segment(1, 2, "Hello")],
+        source_url="https://youtu.be/video_123",
+        details=details,
+    )
+    _write_json(
+        run / "manifest.json",
+        {
+            "version": 2,
+            "video_id": "video_123",
+            "source_url": "https://youtu.be/video_123",
+            "transcript": {
+                **details,
+                "source_digest": artifacts.source_digest,
+                "artifacts": {
+                    "segments": "transcript/segments.source.json",
+                    "markdown": "transcript/transcript.source.md",
+                },
+            },
+            "translations": [],
+        },
+    )
+    translation_input = tmp_path / "translation.ko.json"
+    _write_json(
+        translation_input,
+        {"segments": [{"id": "segment-000001", "text": "안녕하세요"}]},
+    )
+    add_translation(
+        "video_123",
+        translation_input,
+        language="ko",
+        provider="codex",
+        model="gpt-test",
+        runs_root=tmp_path / "runs",
+    )
+
+    result = pack_run("video_123", runs_root=tmp_path / "runs")
+
+    with zipfile.ZipFile(result.archive_path) as archive:
+        names = archive.namelist()
+        assert "transcript/segments.source.json" in names
+        assert "transcript/transcript.source.md" in names
+        assert "transcript/segments.ko.json" in names
+        assert "transcript/transcript.ko.md" in names
+        start_here = archive.read("START_HERE.md").decode("utf-8")
+        assert '"source_language": "en"' in start_here
+        assert '"translation_languages": [' in start_here
+        assert '"ko"' in start_here
+
+    artifacts.segments_path.write_text(
+        artifacts.segments_path.read_text(encoding="utf-8").replace("Hello", "Tampered"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="digest"):
+        pack_run("video_123", runs_root=tmp_path / "runs", force=True)
 
 
 def test_pack_run_is_deterministic_and_requires_force(tmp_path) -> None:

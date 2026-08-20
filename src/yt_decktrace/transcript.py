@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
+from hashlib import sha256
 from pathlib import Path
 
 import pysubs2
@@ -16,6 +17,15 @@ class Segment:
     start: float
     end: float
     text: str
+    id: str | None = None
+
+
+@dataclass(frozen=True)
+class TranscriptArtifacts:
+    segments_path: Path
+    markdown_path: Path
+    source_digest: str
+    segment_count: int
 
 
 def parse_json3(path: Path) -> list[Segment]:
@@ -75,13 +85,37 @@ def merge_segments(
     return merged
 
 
+def assign_segment_ids(segments: Iterable[Segment]) -> list[Segment]:
+    """Return segments with deterministic identifiers suitable for translation alignment."""
+    assigned: list[Segment] = []
+    used: set[str] = set()
+    for index, segment in enumerate(segments, start=1):
+        identifier = segment.id or f"segment-{index:06d}"
+        if identifier in used:
+            raise ValueError(f"Duplicate transcript segment id: {identifier}")
+        used.add(identifier)
+        assigned.append(Segment(segment.start, segment.end, segment.text, identifier))
+    return assigned
+
+
+def segment_record(segment: Segment) -> dict[str, object]:
+    if segment.id is None:
+        raise ValueError("Transcript segments must have identifiers before serialization")
+    return {
+        "id": segment.id,
+        "start": segment.start,
+        "end": segment.end,
+        "text": segment.text,
+    }
+
+
 def transcribe_with_whisper(
     media_path: Path,
     *,
     model_name: str,
     device: str = "auto",
     language: str = "auto",
-) -> tuple[list[Segment], dict[str, str]]:
+) -> tuple[list[Segment], dict[str, object]]:
     register_nvidia_dll_directories()
     import ctranslate2
     from faster_whisper import WhisperModel
@@ -117,8 +151,9 @@ def transcribe_with_whisper(
         "model": model_name,
         "device": selected_device,
         "compute_type": compute_type,
-        "language": info.language,
+        "source_language": info.language,
         "requested_language": language,
+        "is_original": True,
     }
     return merge_segments(segments), details
 
@@ -128,20 +163,37 @@ def write_transcript(
     segments: list[Segment],
     *,
     source_url: str,
-    details: dict[str, str],
-) -> None:
+    details: dict[str, object],
+) -> TranscriptArtifacts:
+    """Write immutable source transcript artifacts with stable segment identifiers."""
     directory.mkdir(parents=True, exist_ok=True)
+    identified = assign_segment_ids(segments)
+    segments_path = directory / "segments.source.json"
     write_json(
-        directory / "segments.json",
-        {"details": details, "segments": [asdict(segment) for segment in segments]},
+        segments_path,
+        {
+            "version": 1,
+            "role": "source",
+            "language": details.get("source_language", "unknown"),
+            "details": details,
+            "segments": [segment_record(segment) for segment in identified],
+        },
     )
-    language = details.get("language", "unknown")
-    lines = [f"# Transcript ({language})", ""]
-    for segment in segments:
+    language = str(details.get("source_language", "unknown"))
+    lines = [f"# Source transcript ({language})", ""]
+    for segment in identified:
         timestamp = format_timestamp(segment.start)
         link = youtube_timestamp_url(source_url, segment.start)
-        lines.extend((f"- [{timestamp}]({link}) {segment.text}", ""))
-    (directory / "transcript.md").write_text("\n".join(lines), encoding="utf-8")
+        lines.extend((f"- [{timestamp}]({link}) `{segment.id}` {segment.text}", ""))
+    markdown_path = directory / "transcript.source.md"
+    markdown_path.write_text("\n".join(lines), encoding="utf-8")
+    digest = f"sha256:{sha256(segments_path.read_bytes()).hexdigest()}"
+    return TranscriptArtifacts(
+        segments_path=segments_path,
+        markdown_path=markdown_path,
+        source_digest=digest,
+        segment_count=len(identified),
+    )
 
 
 def resolve_whisper_language(language: str) -> str | None:
