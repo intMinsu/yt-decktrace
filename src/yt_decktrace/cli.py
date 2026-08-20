@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.metadata
+import platform
 import shutil
 import subprocess
 from enum import Enum
@@ -41,10 +42,12 @@ def _package_version(name: str) -> str:
 
 @app.command()
 def doctor() -> None:
-    """Check local video, Python package, and CUDA runtime prerequisites."""
+    """Check local video and speech transcription prerequisites."""
     table = Table(title=f"yt-decktrace {__version__}")
     table.add_column("Component")
     table.add_column("Status")
+    system = platform.system()
+    table.add_row("Platform", f"{system} {platform.machine()}")
 
     ffmpeg = find_ffmpeg()
     if ffmpeg:
@@ -56,30 +59,44 @@ def doctor() -> None:
         ffmpeg_status = "not found"
     table.add_row("FFmpeg", ffmpeg_status)
 
-    nvidia_smi = shutil.which("nvidia-smi")
-    if nvidia_smi:
-        query = subprocess.run(
-            [nvidia_smi, "--query-gpu=name,driver_version", "--format=csv,noheader"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=False,
-        )
-        driver_status = query.stdout.strip() or nvidia_smi
-    else:
-        driver_status = "not found"
-    table.add_row("NVIDIA driver", driver_status)
+    if system == "Windows":
+        nvidia_smi = shutil.which("nvidia-smi")
+        if nvidia_smi:
+            query = subprocess.run(
+                [nvidia_smi, "--query-gpu=name,driver_version", "--format=csv,noheader"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            driver_status = query.stdout.strip() or nvidia_smi
+        else:
+            driver_status = "not found (CPU transcription remains available)"
+        table.add_row("NVIDIA driver", driver_status)
 
-    dll_directories = register_nvidia_dll_directories()
-    table.add_row("NVIDIA wheel DLLs", "\n".join(map(str, dll_directories)) or "not installed")
+        dll_directories = register_nvidia_dll_directories()
+        table.add_row(
+            "NVIDIA wheel DLLs",
+            "\n".join(map(str, dll_directories)) or "not installed (use the cuda environment)",
+        )
+
     try:
         import ctranslate2
 
-        cuda_status = f"{ctranslate2.get_cuda_device_count()} CUDA device(s)"
+        cuda_devices = ctranslate2.get_cuda_device_count()
+        if cuda_devices:
+            whisper_device = f"CUDA ({cuda_devices} device(s))"
+        elif system == "Darwin":
+            whisper_device = "CPU (Metal/MPS is not used by CTranslate2)"
+        else:
+            whisper_device = "CPU"
+        ctranslate2_status = _package_version("ctranslate2")
     except (ImportError, OSError, RuntimeError) as error:
-        cuda_status = f"failed: {error}"
-    table.add_row("CTranslate2", cuda_status)
+        ctranslate2_status = f"failed: {error}"
+        whisper_device = "unavailable"
+    table.add_row("CTranslate2", ctranslate2_status)
+    table.add_row("Whisper device", whisper_device)
     table.add_row("faster-whisper", _package_version("faster-whisper"))
     table.add_row("yt-dlp", _package_version("yt-dlp"))
     console.print(table)

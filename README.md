@@ -9,15 +9,36 @@ It avoids the cost and noise of sending every video frame to a model.
 ![yt-decktrace overview](docs/assets/overview.png)
 
 > [!NOTE]
-> The first working environment targets Windows x64. Install
-> [Pixi](https://pixi.sh/) and make FFmpeg available on `PATH`. A current NVIDIA
-> driver enables CUDA transcription; the CPU path remains available.
+> The locked environment supports Windows x64 and macOS on Apple Silicon or Intel.
+> Install [Pixi](https://pixi.sh/) and make FFmpeg available on `PATH`. macOS uses
+> CPU transcription; Windows can opt into NVIDIA CUDA.
 
 ## Quick start
 
 ![yt-decktrace command usage](docs/assets/usage.svg)
 
-Clone the repository, create the locked environment, and check the external
+### macOS
+
+Install FFmpeg with Homebrew, then clone the repository and create the locked
+CPU environment:
+
+```bash
+brew install ffmpeg
+git clone https://github.com/intMinsu/yt-decktrace.git
+cd yt-decktrace
+pixi install
+pixi run doctor
+```
+
+Both Apple Silicon (`osx-arm64`, macOS 14+) and Intel (`osx-64`) are present in
+`pixi.lock`. The Apple Silicon minimum matches the binary PyAV wheel and avoids
+requiring a local FFmpeg build toolchain. CTranslate2 does not use Metal/MPS, so
+local Whisper runs on the CPU. For faster first runs, prefer YouTube captions or
+a smaller model such as `small`.
+
+### Windows
+
+Clone the repository, create the locked CPU environment, and check the external
 runtime dependencies:
 
 ```powershell
@@ -25,6 +46,15 @@ git clone https://github.com/intMinsu/yt-decktrace.git
 cd yt-decktrace
 pixi install
 pixi run doctor
+```
+
+For NVIDIA transcription, use the Windows-only CUDA environment:
+
+```powershell
+pixi install -e cuda
+pixi run -e cuda doctor
+pixi run -e cuda analyze "https://www.youtube.com/watch?v=VIDEO_ID" `
+  --asr whisper --language en --model large-v3
 ```
 
 Analyze a presentation and package the completed run:
@@ -35,10 +65,11 @@ pixi run pack VIDEO_ID
 ```
 
 By default, `analyze` uses an available Korean YouTube caption track and falls
-back to local Whisper. To ignore captions and transcribe English speech locally:
+back to local Whisper. To ignore captions and transcribe English speech locally
+on macOS or in the default Windows CPU environment:
 
-```powershell
-pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" `
+```bash
+pixi run analyze "https://www.youtube.com/watch?v=VIDEO_ID" \
   --asr whisper --language en --model large-v3
 ```
 
@@ -185,10 +216,11 @@ pixi run pack VIDEO_ID --output exports\presentation.zip --force
 
 ## Development
 
-Pixi provides Python and resolves the application, development, CUDA, cuBLAS,
-and cuDNN packages from PyPI. The conda side intentionally contains only Python
-to avoid mixed conda/PyPI runtime resolution. FFmpeg and the NVIDIA display
-driver remain external dependencies.
+Pixi provides Python and resolves application and development packages from
+PyPI. The default environment is CPU-only and works on Windows and macOS. The
+separate `cuda` environment adds cuBLAS and cuDNN on Windows x64. The conda side
+intentionally contains only Python to avoid mixed conda/PyPI runtime resolution.
+FFmpeg and, for CUDA, the NVIDIA display driver remain external dependencies.
 
 ```powershell
 pixi install
@@ -196,6 +228,8 @@ pixi run doctor
 pixi run lint
 pixi run test
 ```
+
+Run the same checks in the Windows CUDA environment with `pixi run -e cuda ...`.
 
 The current pins are Python 3.12, CUDA 12.9, and cuDNN 9. Model weights are not
 vendored and are cached locally when Whisper is first used.
