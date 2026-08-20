@@ -20,8 +20,8 @@ dependencies = [
 
 [project.optional-dependencies]
 cuda = [
-  "nvidia-cublas-cu12==12.9.2.10",
-  "nvidia-cudnn-cu12==9.21.0.82",
+  "nvidia-cublas-cu12==12.9.2.10; platform_system == 'Windows'",
+  "nvidia-cudnn-cu12==9.21.0.82; platform_system == 'Windows'",
 ]
 dev = [
   "pytest>=8,<9",
@@ -39,13 +39,20 @@ packages = ["src/yt_decktrace"]
 
 [tool.pixi.workspace]
 channels = ["conda-forge"]
-platforms = ["win-64"]
+platforms = [
+  "win-64",
+  { platform = "osx-arm64", macos = "14.0" },
+  "osx-64",
+]
 
 [tool.pixi.dependencies]
 python = "3.12.*"
 
 [tool.pixi.pypi-dependencies]
 yt-decktrace = { path = ".", editable = true }
+
+[tool.pixi.feature.cuda]
+platforms = ["win-64"]
 
 [tool.pixi.tasks]
 doctor = "python -m yt_decktrace doctor"
@@ -55,7 +62,8 @@ test = "python -m pytest"
 lint = "python -m ruff check ."
 
 [tool.pixi.environments]
-default = { features = ["cuda", "dev"] }
+default = { features = ["dev"], solve-group = "cpu" }
+cuda = { features = ["cuda", "dev"], solve-group = "cuda" }
 
 [tool.ruff]
 line-length = 100
